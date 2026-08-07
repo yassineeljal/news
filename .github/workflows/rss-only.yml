@@ -1,0 +1,38 @@
+name: Stock Alert Bot (RSS only)
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer les dépendances
+        run: pip install feedparser python-dotenv groq requests
+
+      - name: Lancer un cycle
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          USE_SCRAPLING: "false"
+        run: python main.py --once
+
+      - name: Sauvegarder la base de dédup
+        run: |
+          git config user.name "stockbot"
+          git config user.email "stockbot@users.noreply.github.com"
+          git add seen_articles.db
+          git diff --cached --quiet || git commit -m "chore: mise a jour de la base de dedup"
+          git push
