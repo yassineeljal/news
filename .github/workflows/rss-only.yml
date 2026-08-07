@@ -33,6 +33,6 @@ jobs:
         run: |
           git config user.name "stockbot"
           git config user.email "stockbot@users.noreply.github.com"
-          git add seen_articles.db
+          git add -f seen_articles.db
           git diff --cached --quiet || git commit -m "chore: mise a jour de la base de dedup"
           git push
